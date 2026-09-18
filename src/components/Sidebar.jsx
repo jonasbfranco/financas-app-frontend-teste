@@ -48,7 +48,7 @@ const items = [
     show: () => true
   },
   {
-    to: "/usuarios",
+    to: "/admin/usuarios",
     label: "Usuários",
     icon: Users,
     show: () => true

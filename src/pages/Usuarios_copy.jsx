@@ -8,40 +8,35 @@ const emptyForm = {
   nome: "",
   login: "",
   email: "",
-  senha: ""
-  //perfil_id: ""
+  senha: "",
+  perfil_id: ""
 };
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
-  //const [perfis, setPerfis] = useState([]);
+  const [perfis, setPerfis] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
 
   async function carregar() {
-    //const [u, p] = await Promise.all([
-    //const u = await Promise.all([
-    const u = await api.get("/api/v1/usuario");
-      //api.get("/api/v1/usuario"),
+    const [u, p] = await Promise.all([
+      api.get("/usuario"),
       // api.get("/profiles")
-    //]);
-    //return console.log(u.data.usuarios);
-    setUsuarios(u.data.usuarios);
-    //setPerfis(p.data);
+    ]);
+    setUsuarios(u.data);
+    setPerfis(p.data);
   }
-
 
   useEffect(() => {
     carregar().catch(() => setStatus("Não foi possível carregar os usuários."));
   }, []);
 
-
   const filtrados = useMemo(() => {
     const q = busca.toLowerCase();
     return usuarios.filter((u) =>
-      [u.nome, u.login, u.email].some((v) =>
+      [u.nome, u.login, u.email, u.perfil_nome].some((v) =>
         String(v || "").toLowerCase().includes(q)
       )
     );
@@ -59,8 +54,8 @@ export default function Usuarios() {
       nome: user.nome,
       login: user.login,
       email: user.email,
-      senha: ""
-      //perfil_id: user.perfil_id || ""
+      senha: "",
+      perfil_id: user.perfil_id || ""
     });
     setShowForm(true);
     setStatus("");
@@ -73,10 +68,10 @@ export default function Usuarios() {
       if (!payload.senha) delete payload.senha;
 
       if (form.id) {
-        await api.put(`/api/v1/usuario/${form.id}`, payload);
+        await api.put(`/users/${form.id}`, payload);
         setStatus("Usuário atualizado com sucesso.");
       } else {
-        await api.post("/api/v1/usuario", payload);
+        await api.post("/users", payload);
         setStatus("Usuário criado com sucesso.");
       }
 
@@ -89,7 +84,7 @@ export default function Usuarios() {
 
   async function alternarAtivo(user) {
     try {
-      await api.patch(`/usuario/${user.id}/status`, { ativo: !user.ativo });
+      await api.patch(`/users/${user.id}/status`, { ativo: !user.ativo });
       await carregar();
     } catch (error) {
       setStatus(error.response?.data?.message || "Erro ao alterar status.");
@@ -131,10 +126,10 @@ export default function Usuarios() {
             <input required placeholder="Login" value={form.login} onChange={(e) => setForm({...form, login:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
             <input required type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm({...form, email:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
             <input type="password" required={!form.id} minLength={8} placeholder={form.id ? "Nova senha (opcional)" : "Senha inicial"} value={form.senha} onChange={(e) => setForm({...form, senha:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
-             {/*<select value={form.perfil_id} onChange={(e) => setForm({...form, perfil_id:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
-              <option value="">Sem perfil específico</option> */}
-              {/* {perfis.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)} */}
-            {/* </select> */}
+            <select value={form.perfil_id} onChange={(e) => setForm({...form, perfil_id:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+              <option value="">Sem perfil específico</option>
+              {perfis.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            </select>
 
             <button className="rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-800">
               Salvar usuário
