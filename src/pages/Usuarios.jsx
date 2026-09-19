@@ -71,6 +71,7 @@ export default function Usuarios() {
     try {
       const payload = { ...form };
       if (!payload.senha) delete payload.senha;
+      if (!payload.ativo) payload.senha;
 
       if (form.id) {
         await api.put(`/api/v1/usuario/${form.id}`, payload);
@@ -89,7 +90,7 @@ export default function Usuarios() {
 
   async function alternarAtivo(user) {
     try {
-      await api.patch(`/usuario/${user.id}/status`, { ativo: !user.ativo });
+      await api.patch(`/api/v1/usuario/${user.id}/status`, { ativo: !user.ativo });
       await carregar();
     } catch (error) {
       setStatus(error.response?.data?.message || "Erro ao alterar status.");

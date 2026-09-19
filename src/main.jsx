@@ -11,6 +11,7 @@ import App from './pages/App.jsx'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Usuarios from './pages/Usuarios.jsx'
+import Transacoes from './pages/Transacoes.jsx';
 
 
 function PrivateRoute({ children, permission }) {
@@ -60,7 +61,7 @@ const router = createBrowserRouter([
           },
           {
             path: "transacoes",
-            element: <p>Rota de transações</p>
+            element: <Transacoes />
           },
           {
             path: "/admin/usuarios",

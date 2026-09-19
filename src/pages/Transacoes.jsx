@@ -8,39 +8,46 @@ const emptyForm = {
   nome: "",
   login: "",
   email: "",
-  senha: "",
-  perfil_id: ""
+  senha: ""
+  //perfil_id: ""
 };
 
-export default function Usuarios() {
-  const [usuarios, setUsuarios] = useState([]);
-  const [perfis, setPerfis] = useState([]);
+export default function Transacoes() {
+  const [transacoes, setTransacoes] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
 
   async function carregar() {
-    const [u, p] = await Promise.all([
-      api.get("/usuario"),
+    //const [u, p] = await Promise.all([
+    //const u = await Promise.all([
+    const u = await api.get("/api/v1/transactions");
+    const c = await api.get("/api/v1/categoria");
+      //api.get("/api/v1/usuario"),
       // api.get("/profiles")
-    ]);
-    setUsuarios(u.data);
-    setPerfis(p.data);
+    //]);
+    //return console.log(u.data.usuarios);
+    setTransacoes(u.data.transacao);
+    setCategorias(c.data.categoria);
+    //setPerfis(p.data);
   }
 
+
   useEffect(() => {
-    carregar().catch(() => setStatus("Não foi possível carregar os usuários."));
+    carregar().catch(() => setStatus("Não foi possível carregar as transações."));
   }, []);
+
 
   const filtrados = useMemo(() => {
     const q = busca.toLowerCase();
-    return usuarios.filter((u) =>
-      [u.nome, u.login, u.email, u.perfil_nome].some((v) =>
+    return transacoes.filter((u) =>
+      [u.data, u.tipo, u.categoria_id, u.descricao, u.tipo, u.valor, u.status].some((v) =>
         String(v || "").toLowerCase().includes(q)
       )
     );
-  }, [usuarios, busca]);
+  }, [transacoes, busca]);
 
   function novo() {
     setForm(emptyForm);
@@ -54,8 +61,8 @@ export default function Usuarios() {
       nome: user.nome,
       login: user.login,
       email: user.email,
-      senha: "",
-      perfil_id: user.perfil_id || ""
+      senha: ""
+      //perfil_id: user.perfil_id || ""
     });
     setShowForm(true);
     setStatus("");
@@ -66,12 +73,13 @@ export default function Usuarios() {
     try {
       const payload = { ...form };
       if (!payload.senha) delete payload.senha;
+      if (!payload.ativo) payload.senha;
 
       if (form.id) {
-        await api.put(`/users/${form.id}`, payload);
+        await api.put(`/api/v1/usuario/${form.id}`, payload);
         setStatus("Usuário atualizado com sucesso.");
       } else {
-        await api.post("/users", payload);
+        await api.post("/api/v1/usuario", payload);
         setStatus("Usuário criado com sucesso.");
       }
 
@@ -84,7 +92,7 @@ export default function Usuarios() {
 
   async function alternarAtivo(user) {
     try {
-      await api.patch(`/users/${user.id}/status`, { ativo: !user.ativo });
+      await api.patch(`/api/v1/usuario/${user.id}/status`, { ativo: !user.ativo });
       await carregar();
     } catch (error) {
       setStatus(error.response?.data?.message || "Erro ao alterar status.");
@@ -126,10 +134,10 @@ export default function Usuarios() {
             <input required placeholder="Login" value={form.login} onChange={(e) => setForm({...form, login:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
             <input required type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm({...form, email:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
             <input type="password" required={!form.id} minLength={8} placeholder={form.id ? "Nova senha (opcional)" : "Senha inicial"} value={form.senha} onChange={(e) => setForm({...form, senha:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
-            <select value={form.perfil_id} onChange={(e) => setForm({...form, perfil_id:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
-              <option value="">Sem perfil específico</option>
-              {perfis.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
-            </select>
+             {/*<select value={form.perfil_id} onChange={(e) => setForm({...form, perfil_id:e.target.value})} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+              <option value="">Sem perfil específico</option> */}
+              {/* {perfis.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)} */}
+            {/* </select> */}
 
             <button className="rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-800">
               Salvar usuário
@@ -155,27 +163,41 @@ export default function Usuarios() {
           <table className="min-w-full">
             <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-5 py-3">Usuário</th>
-                <th className="px-5 py-3">Perfil</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3 text-right">Ações</th>
+                <th className="uppercase text-xs text-center px-5 py-3">Data</th>
+                <th className="uppercase text-xs text-center px-5 py-3">Tipo</th>
+                <th className="uppercase text-xs text-center px-5 py-3">Categoria</th>
+                <th className="uppercase text-xs text-left  px-5 py-3">Descrição</th>
+                <th className="uppercase text-xs text-center px-5 py-3">Valor</th>
+                <th className="uppercase text-xs text-center px-5 py-3">Status</th>
+                <th className="uppercase text-xs text-center px-5 py-3">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtrados.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50">
-                  <td className="px-5 py-4">
-                    <p className="font-semibold text-slate-800">{u.nome}</p>
-                    <p className="text-sm text-slate-500">{u.login} • {u.email}</p>
+                  <td className="text-center text-xs font-semibold text-slate-500">{new Date(u.data).toLocaleDateString("pt-BR")}</td>
+                  <td className="text-center font-semibold text-slate-500"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold 
+                      ${u.tipo === "RECEITA"  ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{u.tipo}</span></td>
+                  
+                  
+                  <td className="text-center text-xs font-semibold text-slate-500">
+                    {categorias.find(categoria => Number(categoria.id) === Number(u.categoria_id))?.nome}
+                    {/* {categorias.find(categoria => categoria.id == u.categoria_id)?.nome} */}
                   </td>
-                  <td className="px-5 py-4 text-sm text-slate-600">{u.perfil_nome || (u.role === "ADMIN" ? "Administrador" : "Sem perfil")}</td>
-                  <td className="px-5 py-4">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${u.ativo ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
-                      {u.ativo ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}
-                      {u.ativo ? "Ativo" : "Inativo"}
-                    </span>
+                  
+                  
+                  <td className="text-left text-xs font-semibold truncate text-slate-500">{u.descricao }</td>
+                  <td className="text-center text-md uppercase font-semibold text-slate-500">
+                      <span className={`text-sm font-semibold ${u.tipo === "RECEITA" ? "text-green-600" : "text-red-600"}`}>
+                        {u.tipo === "RECEITA" ? "+" : "-"} R${" "}
+                        {Number(u.valor).toLocaleString("pt-BR", {minimumFractionDigits: 2,})}</span></td>
+                  <td className="text-center text-md font-semibold text-slate-500">
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          u.status === "PAGO" ? "bg-green-100 text-green-700"
+                          : u.status === "PENDENTE" ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-600" }`}
+                        >{u.status }</span>
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="text-center text-xs font-semibold px-5 py-4">
                     <div className="flex justify-end gap-2">
                       <button onClick={() => editar(u)} className="rounded-lg p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-600" title="Editar">
                         <Pencil className="h-4 w-4" />
