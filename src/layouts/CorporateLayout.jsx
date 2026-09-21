@@ -13,7 +13,7 @@ export default function CorporateLayout() {
       <div className="min-w-0 lg:pl-72">
         <Header onMenu={() => setMenuOpen(true)} />
 
-        <main className="min-w-0 p-5 md:p-8">
+        <main className="min-w-0 w-full max-w-full p-5 md:p-8">
           <Outlet />
         </main>
       </div>

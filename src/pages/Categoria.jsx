@@ -72,7 +72,7 @@ export default function Usuarios() {
     try {
       const payload = { ...form };
       if (!payload.senha) delete payload.senha;
-      //if (!payload.ativo) payload.senha;
+      if (!payload.ativo) payload.senha;
 
       if (form.id) {
         await api.put(`/api/v1/usuario/${form.id}`, payload);
