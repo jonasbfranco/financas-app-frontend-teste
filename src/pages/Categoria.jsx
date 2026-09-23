@@ -1,51 +1,47 @@
 import { Pencil, Plus, Power, Search, Trash, UserCheck, UserX } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import api from "../services/api";
+import api from "../services/api"
 import PageTitle from "../components/PageTitle";
+
 
 const emptyForm = {
   id: null,
   nome: "",
-  login: "",
-  email: "",
-  senha: ""
-  //perfil_id: ""
+  tipo: "",
+  ativo: ""
 };
 
-export default function Usuarios() {
-  const [usuarios, setUsuarios] = useState([]);
-  //const [perfis, setPerfis] = useState([]);
+export default function Categoria() {
+  const [categorias, setCategorias] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
 
   async function carregar() {
-    //const [u, p] = await Promise.all([
-    //const u = await Promise.all([
-    const u = await api.get("/api/v1/usuario");
-      //api.get("/api/v1/usuario"),
-      // api.get("/profiles")
-    //]);
-    //return console.log(u.data.usuarios);
-    setUsuarios(u.data.usuarios);
-    //setPerfis(p.data);
+
+    const u = await api.get("/api/v1/categoria");
+
+    //return console.log(u.data.categorias);
+    setCategorias(u.data.categoria);
   }
 
 
+
   useEffect(() => {
-    carregar().catch(() => setStatus("Não foi possível carregar os usuários."));
+    carregar().catch(() => setStatus("Não foi possível carregar as categorias."));
   }, []);
+
 
 
   const filtrados = useMemo(() => {
     const q = busca.toLowerCase();
-    return usuarios.filter((u) =>
-      [u.nome, u.login, u.email].some((v) =>
+    return categorias.filter((u) =>
+      [u.nome, u.tipo].some((v) =>
         String(v || "").toLowerCase().includes(q)
       )
     );
-  }, [usuarios, busca]);
+  }, [categorias, busca]);
 
   function novo() {
     setForm(emptyForm);
@@ -53,14 +49,12 @@ export default function Usuarios() {
     setStatus("");
   }
 
-  function editar(user) {
+  function editar(cat) {
     setForm({
-      id: user.id,
-      nome: user.nome,
-      login: user.login,
-      email: user.email,
-      senha: ""
-      //perfil_id: user.perfil_id || ""
+      id: cat.id,
+      nome: cat.nome,
+      tipo: cat.login,
+      ativo: cat.ativo
     });
     setShowForm(true);
     setStatus("");
@@ -113,12 +107,12 @@ export default function Usuarios() {
   return (
     <div className="mx-auto max-w-7xl">
       <PageTitle
-        title="Usuários"
-        description="Cadastre, edite e controle os acessos."
+        title="Categorias"
+        description="Cadastre, edite e controle as categorias."
         action={
           <button onClick={novo} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" />
-            Novo usuário
+            Nova categoria
           </button>
         }
       />
@@ -133,7 +127,7 @@ export default function Usuarios() {
         <form onSubmit={salvar} className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">
-              {form.id ? "Editar usuário" : "Novo usuário"}
+              {form.id ? "Editar categoria" : "Nova categoria"}
             </h2>
             <button type="button" onClick={() => setShowForm(false)} className="text-sm font-medium text-slate-500 hover:text-slate-900">
               Cancelar
@@ -174,26 +168,29 @@ export default function Usuarios() {
           <table className="min-w-full">
             <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-5 py-3">Usuário</th>
-                <th className="px-5 py-3">Perfil</th>
+                <th className="px-5 py-3">Nome</th>
+                <th className="px-5 py-3">Tipo</th>
                 <th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtrados.map((u) => (
+              {categorias.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50">
                   <td className="px-5 py-4">
                     <p className="font-semibold text-slate-800">{u.nome}</p>
-                    <p className="text-sm text-slate-500">{u.login} • {u.email}</p>
                   </td>
-                  <td className="px-5 py-4 text-sm text-slate-600">{u.perfil_nome || (u.role === "ADMIN" ? "Administrador" : "Sem perfil")}</td>
+                  
+                  <td className="px-5 py-4 text-sm text-slate-600">{u.tipo}</td>
+                  
+                                    
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${u.ativo ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
                       {u.ativo ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}
                       {u.ativo ? "Ativo" : "Inativo"}
                     </span>
                   </td>
+
                   <td className="px-5 py-4">
                     <div className="flex justify-end gap-2">
                       <button onClick={() => editar(u)} className="rounded-lg p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-600" title="Editar">

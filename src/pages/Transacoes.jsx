@@ -42,6 +42,7 @@ const status_pgto = [
 ]
 
 
+
 function capitalize(texto) {
   if (!texto) return "";
 
@@ -56,7 +57,7 @@ const emptyForm = {
   valor: "",
   forma_pagamento: "",
   data: "",
-  _pgto: "",
+  status: "",
   descricao: ""
 };
 
@@ -67,7 +68,7 @@ export default function Transacoes() {
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [busca, setBusca] = useState("");
-  const [_pgto, setStatus] = useState("");
+  const [status, setStatus] = useState("");
 
   async function carregar() {
     //const u = await api.get("/api/v1/transactions");
@@ -97,6 +98,8 @@ export default function Transacoes() {
     );
   }, [transacoes, busca]);
 
+
+
   function novo() {
   setForm({
       ...emptyForm,
@@ -107,21 +110,54 @@ export default function Transacoes() {
     setStatus("");
   }
 
+
+
   function editar(transacao) {
+
+    const formaPagamento = forma_pagamento.find(
+      (c) =>
+        c.nome.toLowerCase() ===
+        String(transacao.forma_pagamento).toLowerCase()
+    );
+
+  const statusPagamento = status_pgto.find(
+    (c) =>
+      c.nome.toUpperCase() ===
+      String(transacao.status).toUpperCase()
+  );
+
+
     setForm({
       id: transacao.id,
       usuario_id: transacao.usuario_id,
       categoria_id: transacao.categoria_id,
       tipo: transacao.tipo,
       valor: transacao.valor,
-      forma_pagamento: transacao.forma_pagamento,
-      data: transacao.data,
-      status: transacao.status,
+      // forma_pagamento: transacao.forma_pagamento,
+      // data: transacao.data,
+      // status: transacao.status,
+
+      // Pega o nome padronizado do array
+      forma_pagamento: formaPagamento?.nome || "",
+
+    // Corrige a data para o input type="date"
+      data: transacao.data
+        ? String(transacao.data).substring(0, 10)
+        : "",
+
+    // Mantém o padrão utilizado pelo seu select
+      status: statusPagamento
+        ? statusPagamento.nome.toUpperCase()
+        : "",
+
       descricao: transacao.descricao
     });
     setShowForm(true);
     setStatus("");
   }
+
+
+
 
   async function salvar(e) {
     e.preventDefault();
@@ -145,6 +181,8 @@ export default function Transacoes() {
     }
   }
 
+
+
   async function alternarAtivo(transacao) {
     try {
       await api.patch(`/api/v1/transactions/${transacao.id}/status`, { ativo: !transacao.ativo });
@@ -154,6 +192,8 @@ export default function Transacoes() {
     }
   }
 
+
+
   async function excluir(transacao){
     try {
       await api.delete(`/api/v1/transactions/${transacao.id}`);
@@ -162,6 +202,15 @@ export default function Transacoes() {
       setStatus(error.response?.data?.message || "Erro ao excluir transação.");
     }
   }
+
+
+  function limparFormulario() {
+  setForm({
+    ...emptyForm,
+    usuario_id: user.id
+  });
+}
+
 
   return (
     <div className="mx-auto max-w-7xl w-full min-w-0">
@@ -233,7 +282,7 @@ export default function Transacoes() {
 
             <div>
               <label htmlFor="forma_pagamento" className="mb-1.5 block text-sm font-semibold text-slate-900"> Forma de Pgto <span>*</span></label>
-              <select value={form.forma_pagamento} onChange={(e) => setForm({...form, forma_pagamento:e.target.value})} className="min-w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+              <select value={form.forma_pagamento} onChange={(e) => setForm({...form, forma_pagamento: e.target.value})} className="min-w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
               <option value=""> Selecione a forma de pgto </option>
               {forma_pagamento.map((c) => <option key={c.id} value={c.nome}>{capitalize(c.nome)}</option>)}
             </select>
@@ -262,7 +311,7 @@ export default function Transacoes() {
 
             
             <div className="mt-8 flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end">
-              <button type="reset" className="h-11 rounded-lg bg-slate-100 px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-200">
+              <button onClick={limparFormulario} type="button" className="h-11 rounded-lg bg-slate-100 px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-200">
                 Limpar
               </button>
 
@@ -324,7 +373,7 @@ export default function Transacoes() {
                         <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                           u.status === "PAGO" ? "bg-green-100 text-green-700"
                           : u.status === "PENDENTE" ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-600" }`}
-                        >{u.status }</span>
+                        >{u.status}</span>
                   </td>
                   <td className="flex justify-center items-center text-xs font-semibold px-0 py-4">
                     <div className="flex justify-end gap-2">

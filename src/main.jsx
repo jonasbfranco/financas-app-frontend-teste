@@ -12,6 +12,7 @@ import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Usuarios from './pages/Usuarios.jsx'
 import Transacoes from './pages/Transacoes.jsx';
+import Categoria from './pages/Categoria.jsx';
 
 
 function PrivateRoute({ children, permission }) {
@@ -69,7 +70,7 @@ const router = createBrowserRouter([
           },
           {
             path: "categoria",
-            element: <p>Rota de categoria</p>
+            element: <Categoria />
           },
         ]
       }
